@@ -1,5 +1,6 @@
 #import "MASShortcutBinder.h"
 #import "MASShortcut.h"
+#import "MASDictionaryTransformer.h"
 
 @interface MASShortcutBinder ()
 @property(strong) NSMutableDictionary *actions;
@@ -16,7 +17,7 @@
     [self setActions:[NSMutableDictionary dictionary]];
     [self setShortcuts:[NSMutableDictionary dictionary]];
     [self setShortcutMonitor:[MASShortcutMonitor sharedMonitor]];
-    [self setBindingOptions:@{NSValueTransformerNameBindingOption: NSKeyedUnarchiveFromDataTransformerName}];
+    [self setBindingOptions:@{NSValueTransformerNameBindingOption: MASDictionaryTransformerName}];
     return self;
 }
 

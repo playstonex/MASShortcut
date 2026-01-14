@@ -1,4 +1,5 @@
 #import "MASShortcutView+Bindings.h"
+#import "MASDictionaryTransformer.h"
 
 @implementation MASShortcutView (Bindings)
 
@@ -39,7 +40,7 @@
 
 - (void) setAssociatedUserDefaultsKey: (NSString*) newKey
 {
-    [self setAssociatedUserDefaultsKey:newKey withTransformerName:NSKeyedUnarchiveFromDataTransformerName];
+    [self setAssociatedUserDefaultsKey:newKey withTransformerName:MASDictionaryTransformerName];
 }
 
 @end
