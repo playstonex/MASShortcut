@@ -18,6 +18,7 @@
     [self setShortcuts:[NSMutableDictionary dictionary]];
     [self setShortcutMonitor:[MASShortcutMonitor sharedMonitor]];
     [self setBindingOptions:@{NSValueTransformerNameBindingOption: MASDictionaryTransformerName}];
+    [self migrateLegacyShortcutsIfNeeded];
     return self;
 }
 
@@ -117,6 +118,44 @@
     // Bind new shortcut
     [_shortcuts setObject:newShortcut forKey:key];
     [_shortcutMonitor registerShortcut:newShortcut withAction:[_actions objectForKey:key]];
+}
+
+#pragma mark Migration
+
+- (void) migrateLegacyShortcutsIfNeeded
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary *allDefaults = [defaults dictionaryRepresentation];
+    MASDictionaryTransformer *transformer = [MASDictionaryTransformer new];
+    BOOL hasMigrated = NO;
+
+    for (NSString *key in allDefaults) {
+        id value = [defaults objectForKey:key];
+
+        // Check if this value is legacy NSData format
+        if ([value isKindOfClass:[NSData class]]) {
+            @try {
+                // Try to decode as MASShortcut
+                MASShortcut *shortcut = [NSKeyedUnarchiver unarchivedObjectOfClass:[MASShortcut class] fromData:value error:NULL];
+
+                if (shortcut) {
+                    // Convert to new dictionary format
+                    NSDictionary *newValue = [transformer reverseTransformedValue:shortcut];
+
+                    // Save the new format (overwrites the old NSData)
+                    [defaults setObject:newValue forKey:key];
+                    hasMigrated = YES;
+                }
+            } @catch (NSException *exception) {
+                // If decoding fails, this key doesn't contain a MASShortcut, skip it
+            }
+        }
+    }
+
+    // Sync if any migration occurred
+    if (hasMigrated) {
+        [defaults synchronize];
+    }
 }
 
 @end
